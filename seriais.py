@@ -1,6 +1,7 @@
 import pandas as pd
 import glob as gb
 import os
+import time
 
 ROOT_DATABASE = "./base"
 
@@ -10,16 +11,17 @@ def concat_files():
     df_list = []
 
     for i in files_list:
-        path = f"./{ROOT_DATABASE}/{i}"
+        path = f"{ROOT_DATABASE}/{i}"
         df_list.append(pd.read_csv(path))
 
     table = pd.concat(df_list)
     table.to_csv('concat.csv', index=False)
+    print("Concatenado!")
 
 def generate_summary_municipio():    
     if not os.path.exists("./concat.csv"):
         concat_files()
-    
+
     df = pd.read_csv("./concat.csv")
     summary = df.groupby('municipio_oj').sum(numeric_only=True)
     
@@ -30,6 +32,7 @@ def generate_summary_municipio():
     summary['Meta4B'] = (100 * summary['julgm4_b'] / (summary['distm4_b'] - summary['suspm4_b']))
     
     summary.to_csv('summary.csv', index=False)
+    print("Resumo gerado!")
 
 def generate_summary_top10_tribunais():
     if not os.path.exists("./concat.csv"):
@@ -46,9 +49,24 @@ def generate_summary_top10_tribunais():
     
     top10 = summary.sort_values(by='Meta1', ascending=False).head(10)
     top10.to_csv('top10_tribunais.csv')
+    print("Top10 gerado!")
 
 def generate_csv_filtered_municipio():
+    if not os.path.exists("./concat.csv"):
+        concat_files()
     df = pd.read_csv("./concat.csv")
     filter = input("Digite o nome do municipio: ")
+##    filter = "MACAPA"
     filtered_csv = df[df['municipio_oj'] == filter.upper()]
     filtered_csv.to_csv(f"{filter.upper()}.csv", index=False)
+    print("Filtro gerado!")
+
+start = time.time()
+##concat_files()
+##generate_summary_municipio()
+##generate_summary_top10_tribunais()
+##generate_csv_filtered_municipio()
+end = time.time()
+
+time = end - start
+print(f"Tempo decorrido:", time)
